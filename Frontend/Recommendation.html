@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Recommendations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .hotel-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .hotel-item {
+            background-color: #f8f8f8;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .hotel-item h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #333;
+        }
+        .hotel-item p {
+            margin: 5px 0;
+        }
+        .hotel-link {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        .hotel-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Recommended Hotels for You</h1>
+        <ul class="hotel-list" id="hotelList">
+            <!-- Recommended hotels will be inserted here -->
+        </ul>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const userId = 1; // Set the userId
+            const apiUrl = `http://localhost:3000/api/recommendations/${userId}`;
+            
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const hotelList = document.getElementById("hotelList");
+                    if (data.Recommendations && data.Recommendations.length > 0) {
+                        data.Recommendations.forEach(hotel => {
+                            const hotelItem = document.createElement("li");
+                            hotelItem.className = "hotel-item";
+                            hotelItem.innerHTML = `
+                                <h2>${hotel.hotel_name}</h2>
+                                <p><strong>Hotel ID:</strong> <a href="HotelDetails.html?id=${hotel.hotel_id}&userId=${userId}" class="hotel-link">${hotel.hotel_id}</a></p>
+                                <p><strong>Area:</strong> ${hotel.Area || 'N/A'}</p>
+                                <p><strong>City:</strong> ${hotel.City || 'N/A'}</p>
+                                <p><strong>State:</strong> ${hotel.State || 'N/A'}</p>
+                                <p><strong>Rating:</strong> ${hotel.rating}</p>
+                                <p><strong>Price per Night:</strong> ${hotel.price_per_night}</p>
+                            `;
+                            hotelList.appendChild(hotelItem);
+                        });
+                    } else {
+                        hotelList.innerHTML = "<p>No recommendations found for you.</p>";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching recommendations:", error);
+                });
+        });
+    </script>
+</body>
+</html>

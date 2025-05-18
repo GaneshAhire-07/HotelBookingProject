@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .form-container input::placeholder {
+            color: #888;
+        }
+
+        .form-container button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .form-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            color: red;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2>Book Your Stay</h2>
+            <form id="bookingForm">
+                <input type="hidden" id="hotelId" placeholder="Hotel ID" required>
+                <input type="number" id="userId" placeholder="User ID" value="1" required>
+                <input type="number" id="noOfNights" placeholder="Number of Nights" required>
+                <input type="number" id="noOfPeople" placeholder="Number of People" required>
+                <input type="datetime-local" id="checkInTime" placeholder="Check-in Time"
+                    title="Enter your check-in time" required>
+                <input type="datetime-local" id="checkOutTime" placeholder="Check-out Time"
+                    title="Enter your check-out time" required>
+                <div id="buttonsContainer">
+                    <button type="button" id="payNow">Pay Now</button>
+                    <button type="button" id="bookLater">Book Later</button>
+                </div>
+            </form>
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script>
+        // Fetch the hotelId from localStorage or a URL parameter if coming from the previous page
+        const urlParams = new URLSearchParams(window.location.search);
+        const hotelIdFromUrl = urlParams.get('hotelId');
+        if (hotelIdFromUrl) {
+            document.getElementById("hotelId").value = hotelIdFromUrl;
+        }
+
+        // Event listeners for the buttons
+        document.getElementById("payNow").addEventListener("click", function () {
+            if (validateForm()) {
+                handleBooking("completed");
+            }
+        });
+
+        document.getElementById("bookLater").addEventListener("click", function () {
+            if (validateForm()) {
+                handleBooking("draft", true);
+            }
+        });
+
+        function validateForm() {
+            const userId = document.getElementById("userId").value.trim();
+            const hotelId = document.getElementById("hotelId").value.trim();
+            const noOfNights = document.getElementById("noOfNights").value.trim();
+            const noOfPeople = document.getElementById("noOfPeople").value.trim();
+            const checkInTime = document.getElementById("checkInTime").value.trim();
+            const checkOutTime = document.getElementById("checkOutTime").value.trim();
+
+            const messageDiv = document.getElementById("message");
+            messageDiv.textContent = "";
+
+            if (!userId || !hotelId || !noOfNights || !noOfPeople || !checkInTime || !checkOutTime) {
+                messageDiv.textContent = "All fields are required.";
+                return false;
+            }
+            return true;
+        }
+
+        function handleBooking(paymentStatus, redirectToSearch = false) {
+            const userId = document.getElementById("userId").value.trim();
+            const hotelId = document.getElementById("hotelId").value.trim();
+            const noOfNights = document.getElementById("noOfNights").value.trim();
+            const noOfPeople = document.getElementById("noOfPeople").value.trim();
+            const checkInTime = document.getElementById("checkInTime").value.trim();
+            const checkOutTime = document.getElementById("checkOutTime").value.trim();
+
+            const bookingData = {
+                User_id: parseInt(userId),
+                Hotel_id: parseInt(hotelId),
+                NoOFNights: parseInt(noOfNights),
+                NoOFPeople: parseInt(noOfPeople),
+                check_in_time: checkInTime,
+                check_out_time: checkOutTime,
+                Payment_Status: paymentStatus
+            };
+
+            fetch("http://127.0.0.1:3000/api/booking", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(bookingData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("API Response: ", data);
+                const messageDiv = document.getElementById("message");
+                if (paymentStatus === "completed") {
+                    messageDiv.textContent = "Booking Completed";
+                } else {
+                    messageDiv.textContent = data.Message;
+                }
+
+                if (redirectToSearch) {
+                    window.location.href = "SearchHotels3.html";
+                }
+            })
+            .catch(error => {
+                document.getElementById("message").textContent = "An error occurred. Please try again.";
+                console.error("Error:", error);
+            });
+        }
+    </script>
+</body>
+
+</html>

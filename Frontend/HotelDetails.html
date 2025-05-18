@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .hotel-details {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .hotel-details h1 {
+            margin-top: 0;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        .buttons button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .book-now {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .cancel {
+            background-color: #ff0000;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="hotelDetails" class="hotel-details">
+        <!-- Hotel details will be populated here -->
+    </div>
+
+    <div class="buttons">
+        <button class="book-now" id="bookNowButton">Book Now</button>
+        <button class="cancel" id="cancelButton">Cancel</button>
+    </div>
+
+    <script>
+        // Function to get query parameters
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Fetch hotel details and log the visit
+        function fetchHotelDetails(hotelId, userId) {
+            fetch(`http://127.0.0.1:3000/api/HotelDetailsAndVisit/${hotelId}?UserID=${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.Error) {
+                    document.getElementById('hotelDetails').textContent = data.Error;
+                } else {
+                    const hotel = data.HotelDetails;
+                    const detailsHtml = `
+                        <h1>${hotel.name}</h1>
+                        <p>Area: ${hotel.Area || 'N/A'}</p>
+                        <p>City: ${hotel.City || 'N/A'}</p>
+                        <p>State: ${hotel.State || 'N/A'}</p>
+                        <p>Rating: ${hotel.rating}</p>
+                        <p>Price per Night: ${hotel.price_per_night}</p>
+                        <p>Discount: ${hotel.discount || 'N/A'}</p>
+                        <p>Address: ${hotel.address || 'N/A'}</p>
+                    `;
+                    document.getElementById('hotelDetails').innerHTML = detailsHtml;
+                }
+            })
+            .catch(error => {
+                document.getElementById('hotelDetails').textContent = 'An error occurred. Please try again.';
+                console.error('Error:', error);
+            });
+        }
+
+        // Get hotel ID and user ID from query string
+        const hotelId = getQueryParam('id');
+        const userId = getQueryParam('userId'); // User ID should be passed from the login session or URL
+
+        if (hotelId && userId) {
+            fetchHotelDetails(hotelId, userId);
+        } else {
+            document.getElementById('hotelDetails').textContent = 'Hotel ID or User ID is missing.';
+        }
+
+        // Event listener for "Book Now" button
+        document.getElementById('bookNowButton').addEventListener('click', function() {
+            window.location.href = `Booking.html?hotelId=${hotelId}&userId=${userId}`;
+        });
+
+        // Event listener for "Cancel" button
+        document.getElementById('cancelButton').addEventListener('click', function() {
+            window.location.href = `SearchHotels3.html?userId=${userId}`;
+        });
+    </script>
+</body>
+
+</html>
